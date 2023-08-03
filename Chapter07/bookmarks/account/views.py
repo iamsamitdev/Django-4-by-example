@@ -23,14 +23,13 @@ def user_login(request):
             user = authenticate(request,
                                 username=cd['username'],
                                 password=cd['password'])
-            if user is not None:
-                if user.is_active:
-                    login(request, user)
-                    return HttpResponse('Authenticated successfully')
-                else:
-                    return HttpResponse('Disabled account')
-            else:
+            if user is None:
                 return HttpResponse('Invalid login')
+            if user.is_active:
+                login(request, user)
+                return HttpResponse('Authenticated successfully')
+            else:
+                return HttpResponse('Disabled account')
     else:
         form = LoginForm()
     return render(request, 'account/login.html', {'form': form})
@@ -40,9 +39,7 @@ def user_login(request):
 def dashboard(request):
     # Display all actions by default
     actions = Action.objects.exclude(user=request.user)
-    following_ids = request.user.following.values_list('id',
-                                                       flat=True)
-    if following_ids:
+    if following_ids := request.user.following.values_list('id', flat=True):
         # If user is following others, retrieve only their actions
         actions = actions.filter(user_id__in=following_ids)
     actions = actions.select_related('user', 'user__profile')\

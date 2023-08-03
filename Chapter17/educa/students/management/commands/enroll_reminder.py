@@ -18,9 +18,9 @@ class Command(BaseCommand):
         emails = []
         subject = 'Enroll in a course'
         date_joined = timezone.now().today() - \
-                      datetime.timedelta(days=options['days'] or 0)
+                          datetime.timedelta(days=options['days'] or 0)
         users = User.objects.annotate(course_count=Count('courses_joined'))\
-            .filter(course_count=0,
+                .filter(course_count=0,
                     date_joined__date__lte=date_joined)
         for user in users:
             message = """Dear {},
@@ -31,4 +31,4 @@ class Command(BaseCommand):
                            settings.DEFAULT_FROM_EMAIL,
                            [user.email]))
         send_mass_mail(emails)
-        self.stdout.write('Sent {} reminders'.format(len(emails)))
+        self.stdout.write(f'Sent {len(emails)} reminders')
